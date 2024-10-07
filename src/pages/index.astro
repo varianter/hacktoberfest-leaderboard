@@ -1,37 +1,101 @@
 ---
-import { getAllUserData } from '../data';
-import Layout from '../layouts/Layout.astro';
+import { Icon } from "astro-icon/components";
+import { getAllUserData } from "../data";
+import Layout from "../layouts/Layout.astro";
 
-const data = await getAllUserData()
+const data = await getAllUserData();
 ---
 
 <Layout title="Variant Hacktoberfest Leaderboard.">
-	<main class="p-10">
-		<h1>Variant Hacktoberfest Leaderboard</h1>
+  <main class="p-10 py-24">
+    <h1 class="font-bold text-5xl text-center">
+      Variant: Yearly Hacktoberfest Leaderboard
+    </h1>
 
-		<div class="my-8">
-			<h2>Current leader</h2>
-			<div>{data[0].name} with {data[0].contributionsCollection.totalRepositoryContributions} contributions</div>
-		</div>
+    <div
+      class="my-16 max-w-64 mx-auto text-center flex flex-col justify-center items-center gap-4"
+    >
+      <Icon name="pepicons-pop:trophy-circle" width={100} height={100} />
+      <h2 class="text-lg">
+        Current leader:
+        <strong class="block"
+          ><a href={data[0].url} class="underline">{data[0].name}</a></strong
+        >
+        <span class="text-sm"
+          >with {data[0].contributionsCollection.totalRepositoryContributions} contribution(s)</span
+        >
+      </h2>
+    </div>
 
-		<h2>All variants ({data.length})</h1>
-		{data.map((contribution, i) => {
-			return (
-				<article class="mt-4">
-					<h2>#{i+1} Name: {contribution.name} (Total: {contribution.contributionsCollection.totalRepositoryContributions})</h2>
-						<dl class="flex w-full gap-4 ml-8">
-							<div class="flex gap-2">
-								<dt>Pull Requests:</dt>
-								<dd>{contribution.contributionsCollection.totalPullRequestContributions}</dd>
-							</div>
-							<div class="flex gap-2">
-								<dt>Issues:</dt>
-								<dd>{contribution.contributionsCollection.totalIssueContributions}</dd>
-							</div>
-						</dl>
-				</article>
-			);
-		})}
-	</main>
+    <hr class="border-[#1b1b1b] my-8" />
+
+    <h2 class="text-2xl">All variants ({data.length})</h2>
+
+    <ol class="text-lg list-decimal pl-8">
+      {
+        data.map((contribution, i) => (
+          <li>
+            <article class="mt-8">
+              <h3>
+                <a href={contribution.url} class="underline">
+                  {contribution.name}
+                </a>
+              </h3>
+              <dl class="flex w-full gap-4 idontalwaysliketailwind flex-wrap">
+                <div class="flex gap-2">
+                  <dt>Total:</dt>
+                  <dd>
+                    {
+                      contribution.contributionsCollection
+                        .totalRepositoryContributions
+                    }
+                  </dd>
+                </div>
+                <div class="flex gap-2">
+                  <dt>Pull Requests:</dt>
+                  <dd>
+                    {
+                      contribution.contributionsCollection
+                        .totalPullRequestContributions
+                    }
+                  </dd>
+                </div>
+                <div class="flex gap-2">
+                  <dt>Issues:</dt>
+                  <dd>
+                    {
+                      contribution.contributionsCollection
+                        .totalIssueContributions
+                    }
+                  </dd>
+                </div>
+              </dl>
+            </article>
+          </li>
+        ))
+      }
+    </ol>
+
+    <div class="flex justify-center my-24">
+      <aside
+        class="bg-[#6200EE] px-8 py-4 mx-2 rounded-md text-white shadow-hard inline-block"
+      >
+        Join? Check <a
+          class="underline"
+          href="https://variantas.slack.com/archives/C07QSJW0R0T"
+          >#yearly-hacktoberfest</a
+        > on Slack
+      </aside>
+    </div>
+  </main>
 </Layout>
 
+<style is:global>
+  .idontalwaysliketailwind {
+    color: #6200ee;
+  }
+  .idontalwaysliketailwind > *:not(:last-child)::after {
+    content: "✧";
+    margin-left: 1rem;
+  }
+</style>

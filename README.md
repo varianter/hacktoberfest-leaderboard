@@ -1,6 +1,14 @@
 # Variant Leaderboard
 
-Leaderboard for Variant on Hacktoberfest
+Leaderboard for Variant on Hacktoberfest.
+
+Database using Turso.
+
+Documentation on getting started might come. At some point. Maybe.
+In any case, just ask Nikolai to ask Mikael to send someone the `.env` file.
+It should contain something like `GITHUB_TOKEN`, `ASTRO_DB_REMOTE_URL`, and `ASTRO_DB_APP_TOKEN`.
+
+_If your sensitive to bad code, don't look inside `src/pages/index.astro`._
 
 ## 🧞 Commands
 
