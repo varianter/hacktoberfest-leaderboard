@@ -39,6 +39,7 @@ type IssueContributionByRepository = {
 type Repository = {
   nameWithOwner: string;
   url: string;
+  isPrivate: boolean;
 };
 
 type Contributions = {
@@ -124,6 +125,7 @@ export async function getContributionDataFromUsername(
             repository {
               nameWithOwner
               url
+              isPrivate
             }
             contributions(first: 100) {
               totalCount
@@ -148,6 +150,7 @@ export async function getContributionDataFromUsername(
             repository {
               nameWithOwner
               url
+              isPrivate
             }
             contributions(first: 100) {
               totalCount
@@ -231,7 +234,7 @@ function isAllowedRepository(
     (item) =>
       !contributions.repository.nameWithOwner
         .toLowerCase()
-        .startsWith(item.toLowerCase())
+        .startsWith(item.toLowerCase()) && !contributions.repository.isPrivate
   );
 }
 
