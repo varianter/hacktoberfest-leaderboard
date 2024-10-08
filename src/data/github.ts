@@ -10,91 +10,41 @@ const qClient = new ApolloClient({
 
 type GithubUser = {
   name: string;
-  login: string;
   url: string;
   websiteUrl: string;
+  login: string;
   contributionsCollection: ContributionsCollection;
 };
 
 type ContributionsCollection = {
   hasAnyContributions: boolean;
   totalPullRequestContributions: number;
-  totalIssueContributions: number;
   totalRepositoryContributions: number;
-  pullRequestContributionsByRepository: PullRequestContributionByRepository[];
+  totalIssueContributions: number;
+  totalCommitContributions: number;
+  commitContributionsByRepository: ContributionByRepository[];
+  pullRequestContributionsByRepository: ContributionByRepository[];
   issueContributionsByRepository: IssueContributionByRepository[];
-  contributionCalendar: ContributionCalendar;
 };
 
-type PullRequestContributionByRepository = {
+type ContributionByRepository = {
   repository: Repository;
   contributions: Contributions;
 };
 
 type IssueContributionByRepository = {
   repository: Repository;
-  contributions: IssueContributions;
+  contributions: Contributions;
 };
 
 type Repository = {
   nameWithOwner: string;
   url: string;
-  isPrivate: boolean;
+  isPrivate?: boolean;
 };
 
 type Contributions = {
   totalCount: number;
-  pageInfo: PageInfo;
-  nodes: PullRequestContributionNode[];
-};
-
-type IssueContributions = {
-  totalCount: number;
-  nodes: IssueContributionNode[];
-};
-
-type PageInfo = {
-  endCursor: string;
-  hasNextPage: boolean;
-  hasPreviousPage: boolean;
-  startCursor: string;
-};
-
-type PullRequestContributionNode = {
-  occurredAt: string;
-  pullRequest: PullRequest;
-  isRestricted: boolean;
-  url: string;
-};
-
-type IssueContributionNode = {
-  occurredAt: string;
-  issue: Issue;
-  url: string;
-};
-
-type PullRequest = {
-  url: string;
-  title: string;
-};
-
-type Issue = {
-  title: string;
-  url: string;
-};
-
-type ContributionCalendar = {
-  totalContributions: number;
-  weeks: Week[];
-};
-
-type Week = {
-  contributionDays: ContributionDay[];
-};
-
-type ContributionDay = {
-  contributionCount: number;
-  date: string;
 };
 
 type GithubData = {
@@ -114,12 +64,36 @@ export async function getContributionDataFromUsername(
         websiteUrl
 
         contributionsCollection(
-          from: "2024-07-01T00:00:00Z"
+          from: "2024-10-01T00:00:00Z"
           to: "2024-10-31T00:00:00Z"
         ) {
           hasAnyContributions
           totalPullRequestContributions
           totalIssueContributions
+
+          commitContributionsByRepository(maxRepositories: 100) {
+            repository {
+              nameWithOwner
+              url
+              isPrivate
+            }
+            contributions(first: 100) {
+              totalCount
+
+              # pageInfo {
+              #   endCursor
+              #   hasNextPage
+              #   hasPreviousPage
+              #   startCursor
+              # }
+              # nodes {
+              #   occurredAt
+              #   isRestricted
+              #   url
+              #   occurredAt
+              # }
+            }
+          }
 
           pullRequestContributionsByRepository(maxRepositories: 100) {
             repository {
@@ -129,20 +103,22 @@ export async function getContributionDataFromUsername(
             }
             contributions(first: 100) {
               totalCount
-              pageInfo {
-                endCursor
-                hasNextPage
-                hasPreviousPage
-                startCursor
-              }
-              nodes {
-                occurredAt
-                pullRequest {
-                  url
-                  title
-                }
-                occurredAt
-              }
+
+              # pageInfo {
+              #   endCursor
+              #   hasNextPage
+              #   hasPreviousPage
+              #   startCursor
+              # }
+              # nodes {
+              #   occurredAt
+              #   isRestricted
+              #   pullRequest {
+              #     url
+              #     title
+              #   }
+              #   occurredAt
+              # }
             }
           }
 
@@ -150,29 +126,29 @@ export async function getContributionDataFromUsername(
             repository {
               nameWithOwner
               url
-              isPrivate
             }
             contributions(first: 100) {
               totalCount
-              nodes {
-                occurredAt
-                issue {
-                  title
-                  url
-                }
-              }
+              # nodes {
+              #   occurredAt
+              #   issue {
+              #     title
+              #     url
+              #   }
+              # }
             }
           }
 
-          contributionCalendar {
-            totalContributions
-            weeks {
-              contributionDays {
-                contributionCount
-                date
-              }
-            }
-          }
+          #   contributionCalendar {
+          #     totalContributions
+          #     weeks {
+          #       contributionDays {
+          #         contributionCount
+          #         date
+
+          #       }
+          #     }
+          #   }
         }
       }
     }
@@ -193,6 +169,11 @@ export async function getContributionDataFromUsername(
       (i) => isAllowedRepository(i, ignoreList)
     );
 
+  const commitContributionsByRepository =
+    response.data.user.contributionsCollection.commitContributionsByRepository.filter(
+      (i) => isAllowedRepository(i, ignoreList)
+    );
+
   const issueContributionsByRepository =
     response.data.user.contributionsCollection.issueContributionsByRepository.filter(
       (i) => isAllowedRepository(i, ignoreList)
@@ -204,6 +185,14 @@ export async function getContributionDataFromUsername(
   const totalPullRequestContributions = countContributions(
     pullRequestContributionsByRepository
   );
+  const totalCommitContributions = countContributions(
+    commitContributionsByRepository
+  );
+
+  const totalRepositoryContributions =
+    totalIssueContributions +
+    totalPullRequestContributions +
+    totalCommitContributions;
 
   return {
     ...response.data.user,
@@ -213,10 +202,10 @@ export async function getContributionDataFromUsername(
 
       totalIssueContributions,
       totalPullRequestContributions,
-      totalRepositoryContributions:
-        totalIssueContributions + totalPullRequestContributions,
-      hasAnyContributions:
-        totalIssueContributions + totalPullRequestContributions > 0,
+      totalCommitContributions,
+
+      totalRepositoryContributions,
+      hasAnyContributions: totalRepositoryContributions > 0,
 
       pullRequestContributionsByRepository,
       issueContributionsByRepository,
@@ -225,9 +214,7 @@ export async function getContributionDataFromUsername(
 }
 
 function isAllowedRepository(
-  contributions:
-    | PullRequestContributionByRepository
-    | IssueContributionByRepository,
+  contributions: ContributionByRepository | IssueContributionByRepository,
   ignoreList: string[]
 ) {
   return ignoreList.every(
@@ -239,9 +226,7 @@ function isAllowedRepository(
 }
 
 function countContributions(
-  contributions:
-    | IssueContributionByRepository[]
-    | PullRequestContributionByRepository[]
+  contributions: IssueContributionByRepository[] | ContributionByRepository[]
 ) {
   return contributions.reduce(
     (acc, curr) => acc + curr.contributions.totalCount,

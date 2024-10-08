@@ -52,6 +52,15 @@ const data = await getAllUserData();
                   </dd>
                 </div>
                 <div class="flex gap-2">
+                  <dt>Commits:</dt>
+                  <dd>
+                    {
+                      contribution.contributionsCollection
+                        .totalCommitContributions
+                    }
+                  </dd>
+                </div>
+                <div class="flex gap-2">
                   <dt>Pull Requests:</dt>
                   <dd>
                     {
