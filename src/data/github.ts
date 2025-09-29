@@ -64,8 +64,8 @@ export async function getContributionDataFromUsername(
         websiteUrl
 
         contributionsCollection(
-          from: "2024-10-01T00:00:00Z"
-          to: "2024-10-31T00:00:00Z"
+          from: "2025-10-01T00:00:00Z"
+          to: "2025-10-31T00:00:00Z"
         ) {
           hasAnyContributions
           totalPullRequestContributions
